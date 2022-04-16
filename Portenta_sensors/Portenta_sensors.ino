@@ -20,10 +20,12 @@ IPAddress ip(169,254,72,130); // Assign the IP Adress
 byte mac[] ={ 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE}; // Assign mac address
 unsigned int localPort = 5000; // Assign a port to talk over
 char packetBuffer[10]; // Dimensian a char array to hold our data packet
-char buffor[100]; // Buffor to save a package from sensors
+char pololu[100]; // Buffor to save a package from sensors
+char tfmini[100];
 String datReq; // String for our data
 int packetSize; // Size of the packet
-int i,j = 0;
+int i, j = 0;
+int dist0, dist1, dist2, dist3;
 EthernetUDP Udp; // Create a UDP Object
 
 
@@ -71,7 +73,7 @@ class TFmini // Class allows to operate TFMini plus sensor
       do 
       {
         if (serial->available())        
-          read_byte = serial->read();
+        read_byte = serial->read();
       } 
       while (read_byte != 0x59); // checking if first byte = 0x59
       frame[0] = read_byte;
@@ -207,35 +209,51 @@ void setup()
 
 void loop() 
 {
-  //Read data from pololu
-  pololu0.read();
-  pololu1.read();
-  pololu2.read();
-  pololu3.read();
-
-  tfmini3.read();
-  Serial.println(tfmini3.get_distance_cm());
-
- 
   packetSize =Udp.parsePacket(); //Reads the packet size
   if(packetSize>0) //if packetSize is >0, that means someone has sent a request
   {
      Udp.read(packetBuffer, 10); //Read the data request
      String datReq(packetBuffer); //Convert char array packetBuffer into a string called datReq
 
-     if (datReq =="TFmini")//Do the following if Temperature is requested 
+     if (datReq =="Pololu") // Read data from VL53L1X 
      { 
-        tfmini0.read();
-        sprintf(buffor,"%d: ",j);
+        sprintf(pololu, "%d: ", j);
         j++;
-        for(i = 0; i< 5; i++)
-        {
-           sprintf(buffor + strlen(buffor) ,",%d",tfmini0.get_distance_cm());
-        }
+        sprintf(pololu + strlen(pololu) , ",%d", pololu0.read());
+        sprintf(pololu + strlen(pololu) , ",%d", pololu1.read());
+        sprintf(pololu + strlen(pololu) , ",%d", pololu2.read());
+        sprintf(pololu + strlen(pololu) , ",%d", pololu3.read());
+        
         Udp.beginPacket(Udp.remoteIP(), Udp.remotePort()); //Initialize packet send
-        Udp.print(buffor); //Send the temperature data
+        Udp.print(pololu); //Send the temperature data
         Udp.endPacket(); //End the packet
      }
-  }
- memset(packetBuffer, 0, 10); //clear out the packetBuffer array
+      if (datReq =="TFMini") // Read data from TFMini plus 
+     {  
+        //initialize the read function for TFMini
+        tfmini0.read();
+        tfmini1.read();
+        tfmini2.read();
+        tfmini3.read();
+        //Get the length distance
+        dist0 = tfmini0.get_distance_cm();
+        dist1 = tfmini1.get_distance_cm();
+        dist2 = tfmini2.get_distance_cm();
+        dist3 = tfmini3.get_distance_cm();
+        
+        sprintf(tfmini, "%d: ", j);
+        j++;
+        for(i = 0; i< 2 ; i++)
+        {
+           sprintf(tfmini + strlen(tfmini) ,",%d",dist0);
+           sprintf(tfmini + strlen(tfmini) ,",%d",dist1);
+           sprintf(tfmini + strlen(tfmini) ,",%d",dist2);
+           sprintf(tfmini + strlen(tfmini) ,",%d",dist3);
+        }
+      }  
+        Udp.beginPacket(Udp.remoteIP(), Udp.remotePort()); //Initialize packet send
+        Udp.print(tfmini); //Send the temperature data
+        Udp.endPacket(); //End the packet
+     }
+   memset(packetBuffer, 0, 10); //clear out the packetBuffer array   
 }

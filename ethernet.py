@@ -8,34 +8,29 @@ client_socket = socket(AF_INET,SOCK_DGRAM) # Set up a socket
 
 while(1):
 
-    pololu = "Pololu"
-    bytePololu = str.encode(pololu) # Parse "pololu" into UTF-8
-    client_socket.sendto(bytePololu, address) # Send a request to server 
+    data = "Pololu"
+    data_code = str.encode(data) # Parse "pololu" into UTF-8
+    client_socket.sendto(data_code, address) # Send a request to server
     
     try:
-        (dataPololu, addr) = client_socket.recvfrom(2048) # Receive data from server
-        parserPololu = str(dataPololu) # Parse rec_data into string
-        splitPololu = parserPololu.split(",")
-        for i in splitPololu:
-            print("Pololu: ", i)
-    
+        (rec_data, addr) = client_socket.recvfrom(1000) # Receive data from server
+        parser = str(rec_data) # Parse rec_data into string
+        split_data = parser.split(",")
+        for i in split_data:
+            print(i)
     except:
-        pass
-    
-    time.sleep(2) # Delay before sending next command
-    
-    tfmini = "TFMini"
-    byteTFMini = str.encode(tfmini)
-    client_socket.sendto(byteTFMini, address)
-    
-    try:
-        (dataTFMini, addr) = client_socket.recvfrom(2048)
-        parserTFMini = str(dataTFMini)
-        splitTFMini = parserTFMini.split(",")
-        for i in splitTFMini:
-            print("TFMini: ", i)
-            
-    except:
-        pass
+       pass
         
-    time.sleep(2) # Delay before sending next command
+    data = "TFMini"
+    data_code = str.encode(data) # Parse "TFMini" into UTF-8
+    client_socket.sendto(data_code, address) # Send a request to server
+    
+    try:
+        (rec_data, addr) = client_socket.recvfrom(1000) # Receive data from server
+        parser = str(rec_data) # Parse rec_data into string
+        split_data = parser.split(",")
+        for i in split_data:
+            print(i)
+    except:
+        pass
+    

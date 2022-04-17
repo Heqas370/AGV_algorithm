@@ -24,7 +24,7 @@ char pololu[100]; // Buffor to save a package from sensors
 char tfmini[100];
 String datReq; // String for our data
 int packetSize; // Size of the packet
-int i, j = 0;
+int i, j = 0, h = 0;
 int dist0, dist1, dist2, dist3;
 EthernetUDP Udp; // Create a UDP Object
 
@@ -204,6 +204,9 @@ void setup()
   pololu3.setMeasurementTimingBudget(33000);
   pololu3.startContinuous(33);
 
+  tfmini0.init();
+  tfmini1.init();
+  tfmini2.init();
   tfmini3.init();
 }
 
@@ -215,7 +218,7 @@ void loop()
      Udp.read(packetBuffer, 10); //Read the data request
      String datReq(packetBuffer); //Convert char array packetBuffer into a string called datReq
 
-     if (datReq =="Pololu") // Read data from VL53L1X 
+     if (datReq == "Pololu") // Read data from VL53L1X 
      { 
         sprintf(pololu, "%d: ", j);
         j++;
@@ -228,7 +231,7 @@ void loop()
         Udp.print(pololu); //Send the temperature data
         Udp.endPacket(); //End the packet
      }
-      if (datReq =="TFMini") // Read data from TFMini plus 
+     if (datReq == "TFMini") // Read data from TFMini plus 
      {  
         //initialize the read function for TFMini
         tfmini0.read();
@@ -241,19 +244,20 @@ void loop()
         dist2 = tfmini2.get_distance_cm();
         dist3 = tfmini3.get_distance_cm();
         
-        sprintf(tfmini, "%d: ", j);
-        j++;
+        sprintf(tfmini, "%d: ", h);
+        h++;
         for(i = 0; i< 2 ; i++)
         {
-           sprintf(tfmini + strlen(tfmini) ,",%d",dist0);
-           sprintf(tfmini + strlen(tfmini) ,",%d",dist1);
-           sprintf(tfmini + strlen(tfmini) ,",%d",dist2);
-           sprintf(tfmini + strlen(tfmini) ,",%d",dist3);
+           sprintf(tfmini + strlen(tfmini) ,",%d", dist0);
+           sprintf(tfmini + strlen(tfmini) ,",%d", dist1);
+           sprintf(tfmini + strlen(tfmini) ,",%d", dist2);
+           sprintf(tfmini + strlen(tfmini) ,",%d", dist3);
         }
-      }  
+        
         Udp.beginPacket(Udp.remoteIP(), Udp.remotePort()); //Initialize packet send
         Udp.print(tfmini); //Send the temperature data
         Udp.endPacket(); //End the packet
-     }
+     }   
+  }
    memset(packetBuffer, 0, 10); //clear out the packetBuffer array   
 }

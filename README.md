@@ -42,6 +42,6 @@ To change an address of each sensors by using the software we have to use the XS
 
 * Arduino Portenta - microcontroller which will operate the software. We decided to choose Portenta rather than the previous option which was Arduino Mega and STM32.
 
-* Nvidia Xavier - micro computer for collecting data for our sensors. Of course in the future we will also receive data from cameras and motors. With Nvidia we can easily connect to it by out laptop. To do that we have to be in the network and we are connecting by using an SSH, so we can to know the password.
+* Nvidia Xavier - micro computer for collecting data for our sensors. Of course in the future we will also receive data from cameras and motors. With Nvidia we can easily connect to it by out laptop. To do that we have to be in the network and we are connecting by using an SSH, so we have to know the password.
 
 # Software

@@ -1,3 +1,5 @@
+#include <ros.h>
+#include <geometry_msgs/Twist.h>
 #include <Arduino_PortentaBreakout.h> // Library to use Portenta Breakout
 #include <Wire.h> // Library for using I2C bus
 #include <VL53L1X.h> // Library for Pololu VL53L1X sensor
@@ -15,6 +17,12 @@ breakoutPin pin0 = GPIO_0;
 breakoutPin pin1 = GPIO_1;
 breakoutPin pin2 = GPIO_2;
 breakoutPin pin3 = GPIO_3;
+breakoutPin IN1 = GPIO_4;
+breakoutPin IN2 = GPIO_5;
+breakoutPin ENA = PWM0;
+breakoutPin IN3 = GPIO_6;
+breakoutPin IN4 = SPI0_CS;
+breakoutPin ENB = PWM1;
 
 IPAddress ip(169,254,72,130); // Assign the IP Adress
 byte mac[] ={ 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE}; // Assign mac address
@@ -26,7 +34,100 @@ String datReq; // String for our data
 int packetSize; // Size of the packet
 int i, j = 0, h = 0;
 int dist0, dist1, dist2, dist3;
+double w_r=0, w_l=0;
+ros::NodeHandle nh;
+int lowSpeed = 200;
+int highSpeed = 50;
+double speed_ang=0, speed_lin=0;
+double wheel_rad = 0.0325, wheel_sep = 0.295;
 EthernetUDP Udp; // Create a UDP Object
+
+void messageCb( const geometry_msgs::Twist& msg){
+  speed_ang = msg.angular.z;
+  speed_lin = msg.linear.x;
+  w_r = (speed_lin/wheel_rad) + ((speed_ang*wheel_sep)/(2.0*wheel_rad));
+  w_l = (speed_lin/wheel_rad) - ((speed_ang*wheel_sep)/(2.0*wheel_rad));
+}
+
+
+ros::Subscriber<geometry_msgs::Twist> sub("cmd_vel", &messageCb );
+void Motors_init();
+void MotorL(int Pulse_Width1);
+void MotorR(int Pulse_Width2);
+
+
+void MotorL(int Pulse_Width1){
+ if (Pulse_Width1 > 0){
+
+     analogWrite(ENA, Pulse_Width1);
+
+     digitalWrite(IN1, HIGH);
+
+     digitalWrite(IN3, LOW);
+
+ }
+
+ if (Pulse_Width1 < 0){
+
+     Pulse_Width1=abs(Pulse_Width1);
+
+     analogWrite(ENA, Pulse_Width1);
+
+     digitalWrite(IN1, LOW);
+
+     digitalWrite(IN3, HIGH);
+
+ }
+
+ if (Pulse_Width1 == 0){
+
+     analogWrite(ENA, Pulse_Width1);
+
+     digitalWrite(IN1, LOW);
+
+     digitalWrite(IN3, LOW);
+
+ }
+
+}
+
+
+void MotorR(int Pulse_Width2){
+
+
+ if (Pulse_Width2 > 0){
+
+     analogWrite(ENB, Pulse_Width2);
+
+     digitalWrite(IN2, LOW);
+
+     digitalWrite(IN4, HIGH);
+
+ }
+
+ if (Pulse_Width2 < 0){
+
+     Pulse_Width2=abs(Pulse_Width2);
+
+     analogWrite(ENB, Pulse_Width2);
+
+     digitalWrite(IN2, HIGH);
+
+     digitalWrite(IN4, LOW);
+
+ }
+
+ if (Pulse_Width2 == 0){
+
+     analogWrite(ENB, Pulse_Width2);
+
+     digitalWrite(IN2, LOW);
+
+     digitalWrite(IN4, LOW);
+
+ }
+
+}
 
 
 class TFmini // Class allows to operate TFMini plus sensor
@@ -140,6 +241,10 @@ void setup()
   while(!Serial);
   Ethernet.begin( mac, ip); //Inialize the Ethernet
   Udp.begin(localPort); //Initialize Udp
+
+  Motors_init();
+  nh.initNode();
+  nh.subscribe(sub);
   
   Breakout.pinMode(pin0,OUTPUT); //pololu0 XSHUT
   Breakout.pinMode(pin1,OUTPUT); //pololu1 XSHUT

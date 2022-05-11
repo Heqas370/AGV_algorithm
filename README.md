@@ -5,6 +5,7 @@
 * [Technologies](#Technologies)
 * [Before_you_started](#Before_you_started)
 * [Hardware](#Hardware)
+* [Software](#Software)
 
 # Introduction
 
@@ -39,4 +40,8 @@ TFMini Plus we have to remember about one thing. Portenta breakout has only 3.3 
 * Pololu VL53L1X - they are also a lidar but with two diferrences. Firstable TFMini has range of 12 metres and resolution equaled 1 cm. Pololu has range of 4 m and resolution equaeled 1 mm. As I wrote before pololu are connected by I2C, but we have only three I2C on breakout. That is why we have to connect four sensors to one I2C.
 To change an address of each sensors by using the software we have to use the XSHUT on pololu. XSHUT pins has to be connected to GPIO on breakout. Very important thing about it is that they have a nominal voltaged equaled 2.8 Voltage. For proper working the XSHUT pins must be connected as an input.
 
-* Arduino Portenta - 
+* Arduino Portenta - microcontroller which will operate the software. We decided to choose Portenta rather than the previous option which was Arduino Mega and STM32.
+
+* Nvidia Xavier - micro computer for collecting data for our sensors. Of course in the future we will also receive data from cameras and motors. With Nvidia we can easily connect to it by out laptop. To do that we have to be in the network and we are connecting by using an SSH, so we have to know the password.
+
+# Software
